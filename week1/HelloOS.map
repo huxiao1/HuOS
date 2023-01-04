@@ -1,0 +1,113 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge main.o (0x3) and entry.o (not found)
+Removed property 0xc0000002 to merge main.o (not found) and vgastr.o (0x3)
+
+Discarded input sections
+
+ .group         0x0000000000000000        0x8 main.o
+ .note.gnu.property
+                0x0000000000000000       0x1c main.o
+ .note.gnu.property
+                0x0000000000000000       0x1c vgastr.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000200000                . = 0x200000
+                0x0000000000200000                __begin_start_text = .
+
+.start.text     0x0000000000200000       0xd5
+ *(.start.text)
+ .start.text    0x0000000000200000       0xd5 entry.o
+                0x0000000000200000                _start
+                0x00000000002000d5                __end_start_text = .
+                0x00000000002000d5                __begin_text = .
+
+.text           0x00000000002000d8       0x2b
+ *(.text)
+ .text          0x00000000002000d8        0x0 main.o
+ .text          0x00000000002000d8       0x2b vgastr.o
+                0x00000000002000d8                _strwrite
+                0x00000000002000f4                printf
+                0x0000000000200103                __end_text = .
+                0x0000000000200103                __begin_data = .
+
+.iplt           0x0000000000200103        0x0
+ .iplt          0x0000000000200103        0x0 entry.o
+
+.text.startup   0x0000000000200103       0x3a
+ .text.startup  0x0000000000200103       0x3a main.o
+                0x0000000000200103                main
+
+.text.__x86.get_pc_thunk.bx
+                0x000000000020013d        0x4
+ .text.__x86.get_pc_thunk.bx
+                0x000000000020013d        0x4 main.o
+                0x000000000020013d                __x86.get_pc_thunk.bx
+
+.data           0x0000000000200144        0x0
+ *(.data)
+ .data          0x0000000000200144        0x0 main.o
+ .data          0x0000000000200144        0x0 vgastr.o
+                0x0000000000200141                __end_data = .
+                0x0000000000200141                __begin_rodata = .
+
+.got            0x0000000000200144        0x0
+ .got           0x0000000000200144        0x0 entry.o
+
+.got.plt        0x0000000000200144        0xc
+ .got.plt       0x0000000000200144        0xc entry.o
+                0x0000000000200144                _GLOBAL_OFFSET_TABLE_
+
+.igot.plt       0x0000000000200150        0x0
+ .igot.plt      0x0000000000200150        0x0 entry.o
+
+.rodata         0x0000000000200150        0xa
+ *(.rodata)
+ *(.rodata.*)
+ .rodata.str1.1
+                0x0000000000200150        0xa main.o
+                0x000000000020015a                __end_rodata = .
+                0x000000000020015a                __begin_kstrtab = .
+
+.eh_frame       0x000000000020015c       0x8c
+ .eh_frame      0x000000000020015c       0x60 main.o
+ .eh_frame      0x00000000002001bc       0x2c vgastr.o
+                                         0x44 (size before relaxing)
+
+.rel.dyn        0x00000000002001e8        0x0
+ .rel.got       0x00000000002001e8        0x0 entry.o
+ .rel.iplt      0x00000000002001e8        0x0 entry.o
+
+.kstrtab
+ *(.kstrtab)
+                0x00000000002001e8                __end_kstrtab = .
+                0x00000000002001e8                __begin_bss = .
+
+.bss            0x00000000002001e8        0x0
+ *(.bss)
+ .bss           0x00000000002001e8        0x0 main.o
+ .bss           0x00000000002001e8        0x0 vgastr.o
+                0x00000000002001e8                __end_bss = .
+LOAD entry.o
+LOAD main.o
+LOAD vgastr.o
+OUTPUT(HuOS.elf elf32-i386)
+
+.comment        0x0000000000000000       0x2a
+ .comment       0x0000000000000000       0x2a main.o
+                                         0x2b (size before relaxing)
+ .comment       0x000000000000002a       0x2b vgastr.o
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 main.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 vgastr.o
