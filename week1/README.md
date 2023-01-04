@@ -175,7 +175,7 @@ GRUB 在启动时会加载一个 grub.cfg 的文本文件，根据其中的内�
 #把下面的代码复制，然后插入到/boot/grub/grub.cfg文件末尾  
 #然后把HuOS.bin文件复制到/boot/目录下  
 #最后重启计算机就可以看到HuOS启动选项了  
-menuentry 'HelloOS' {
+menuentry 'HuOS' {
     insmod part_msdos
     insmod ext2
     set root='hd0,msdos5'  #注意boot目录挂载的分区，这是我机器上的情况
