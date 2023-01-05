@@ -54,13 +54,14 @@
 这些驱动一旦被装载，就是内核的一部分了，并不是像微内核一样作为服务进程运行。这又吸取了宏内核的优势，代码高度耦合，性能强劲。
 
 # 已成熟的内核结构
-Linux-GNU 宏内核
+**Linux-GNU 宏内核**  
 ![Linux-GNU](./images/linux.png)
 
-Darwin-XNU mac与ios 微内核（Mach）架构 Mach和BSD双内核的微内核架构
+**Darwin-XNU mac与ios 微内核（Mach）架构 Mach和BSD双内核的微内核架构**  
 ![Darwin-XNU](./images/darwin.png)
 
-Window NT 宏内核  
-![Windows-NT](./images/wndows.png)
+**Window NT 混合内核**  
+内核相较于linux来说小，但是仍有一些模块在内核，也有相当多的模块在用户态。  
+![Windows-NT](./images/wndows.png)  
 HAL 层上是定义了一个小内核。小内核之上是各种内核组件，微软称之为内核执行体，它们完成进程、内存、配置、I/O 文件缓存、电源与即插即用、安全等相关的服务。所有的设备驱动和文件系统都由 I/O 管理器统一管理，驱动程序可以堆叠形成 I/O 驱动栈，功能请求被封装成 I/O 包，在栈中一层层流动处理。
 
