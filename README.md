@@ -1,4 +1,4 @@
-# HuOS: A mixed-mode OS designed by me.
+# HuOS: A hybrid kernel designed by me.
 ## Overview
 ## [The First Week -- Prototype](./week1/README.md)  
 首先借用GRUB实现一个最简单的内核  

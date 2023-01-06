@@ -87,7 +87,7 @@ eGdtLen equ $ - null_dsc ;GDT长度
 eGdtPtr:dw eGdtLen - 1 ;GDT界限 
 dq ex64_GDT
 ```
-CPL<中断门DPL but CPL≥目标段DPL(CPL访问时的权限)  
+CPL<=中断门DPL可以访问。CPL>目标段DPL不可访问。  
 ### 切换到长模式
 1.准备长模式全局描述符表:
 ```
@@ -149,7 +149,7 @@ jmp 08:entry64 ;entry64为程序标号即64位偏移地址
 ![段寄存器](./images/protectmode_int.png)   
 保护模式要实现中断，也必须在内存中有一个中断向量表，同样是由 IDTR 寄存器指向。
 ![段寄存器](./images/protectmode_intt.png)   
-做完这一系列优先级和权限检查之后，CPU 才会加载中断门描述符中目标代码段选择子到 CS 寄存器中，把目标代码段偏移加载到 EIP 寄存器中。
+做完一系列的优先级和权限检查之后，CPU 才会加载中断门描述符中目标代码段选择子到 CS 寄存器中，把目标代码段偏移加载到 EIP 寄存器中。
 ## 长模式2
 中断门描述符  
 ![长模式中断门描述符](./images/longmode_int.png)  
