@@ -15,4 +15,4 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [Cache与内存](./week3/cache%26mem/README.md)
 ### Synchronization Primitives
 #### [并发操作中，解决数据同步的四种方法](./week3/Data_Synchronization/README.md)
-#### [Linux下的自旋锁和信号量的实现](./week3/Linux_Methond/README.md)
+#### [Linux下的自旋锁和信号量的实现](./week3/Data_Synchronization/README.md)
