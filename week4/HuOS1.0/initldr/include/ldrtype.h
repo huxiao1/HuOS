@@ -13,21 +13,27 @@
 
 #define FHDSC_NMAX 192
 #define FHDSC_SZMAX 256
+/*用于对GIC（全局中断控制器）进行控制的常量*/
 #define MDC_ENDGIC 0xaaffaaffaaffaaff
 #define MDC_RVGIC 0xffaaffaaffaaffaa
+/*驱动程序和映像文件在物理内存中的位置*/
 #define REALDRV_PHYADR 0x1000
 #define ILDRKRL_PHYADR 0x200000
 #define IMGSHEL_PHYADR 0x30000
 #define IKSTACK_PHYADR (0x90000-0x10)
 #define IKSTACK_SIZE 0x1000
 #define IMGFILE_PHYADR 0x4000000
+/*内核映像在物理内存中的位置*/
 #define IMGKRNL_PHYADR 0x2000000
 #define KINITPAGE_PHYADR 0x1000000
 #define KINITFRVM_PHYADR 0x800000
 #define KINITFRVM_SZ 0x400000
+/*映像文件的物理地址*/
 #define LDRFILEADR IMGFILE_PHYADR
+/*偏移量*/
 #define MLOSDSC_OFF (0x1000)
-#define MRDDSC_ADR (mlosrddsc_t*)(LDRFILEADR+0x1000)
+/*指向一个结构体的指针，可能是内存描述符，并且它的地址是映像文件地址加上偏移量*/
+#define MRDDSC_ADR (mlosrddsc_t*)(LDRFILEADR+0x1000)  ////0x1000的偏移量就是4kb，也就是映像中的Grub头
 
 #define KRNL_VIRTUAL_ADDRESS_START 0xffff800000000000
 #define KPML4_P (1<<0)

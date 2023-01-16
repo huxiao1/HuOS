@@ -8,7 +8,7 @@ void ldrkrl_entry()
     init_curs();
     close_curs();
     clear_screen(VGADP_DFVL);
-    init_bstartparm();
+    init_bstartparm();    //收集机器环境信息的主函数
     return;
 }
 

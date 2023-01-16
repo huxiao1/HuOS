@@ -23,7 +23,7 @@ IMGSECTNR = 204800
 PHYDSK = /dev/sdb
 VDIFNAME = hd.vdi
 VMDKFNAME = hd.img
-KRNLEXCIMG = Cosmos.bin
+KRNLEXCIMG = HuOS.bin
 
 LOGOFILE = logo.bmp background.bmp
 FONTFILE = font.fnt
@@ -34,7 +34,7 @@ RELEDSTPATH = ../release
 INITLDR_BUILD_PATH =./initldr/build/
 CPLILDR_PATH =./release/
 INSTALL_PATH =/boot/
-INSTALLSRCFILE_PATH =./release/Cosmos.eki
+INSTALLSRCFILE_PATH =./release/HuOS.eki
 SRCFILE = $(BOOTEXCIMG) $(KRNLEXCIMG) $(LDEREXCIMG) $(SHELEXCIMG)
 RSRCFILE = $(BOOTEXCIMG) $(KRNLEXCIMG) $(LDEREXCIMG) $(SHELEXCIMG) #$(VDIFNAME) $(VMDKFNAME)
 
@@ -83,8 +83,8 @@ dbugexc:
 	$(CD) $(EXKNL_PATH) && $(DBUGVM)
 
 KIMG:
-	@echo '正在生成Cosmos内核映像文件，请稍后……'
-	$(CD) $(CPLILDR_PATH) && $(LKIMG) -lhf $(INITLDRIMH) -o Cosmos.eki -f $(LKIMG_INFILE)
+	@echo '正在生成HuOS内核映像文件，请稍后……'
+	$(CD) $(CPLILDR_PATH) && $(LKIMG) -lhf $(INITLDRIMH) -o HuOS.eki -f $(LKIMG_INFILE)
 
 KVMRUN:
 	$(VM) $(VMFLAGES)
@@ -105,6 +105,6 @@ createimg:
 	$(DD) bs=512 if=/dev/zero of=$(DSKIMG) count=$(IMGSECTNR)
 
 install:
-	@echo '下面将开始安装Cosmos内核，请确认……'
+	@echo '下面将开始安装HuOS内核，请确认……'
 	sudo $(CP) $(CPFLAGES) $(INSTALLSRCFILE_PATH) $(INSTALL_PATH)
-	@echo 'Cosmos内核已经安装完成，请重启计算机……'
+	@echo 'HuOS内核已经安装完成，请重启计算机……'
