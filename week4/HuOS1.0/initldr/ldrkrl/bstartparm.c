@@ -44,10 +44,10 @@ void disp_mbsp(machbstart_t *mbsp)
     return;
 }
 
-void init_bstartparm()
+void init_bstartparm()    //二级引导器ldrkrl_entry最后要进入的主函数
 {
-    machbstart_t *mbsp = MBSPADR;
-    machbstart_t_init(mbsp);
+    machbstart_t *mbsp = MBSPADR;   //存储在1MB的内存地址
+    machbstart_t_init(mbsp);        //初始化machbstart_t结构体
     init_chkcpu(mbsp);
     init_mem(mbsp);
     if (0 == get_wt_imgfilesz(mbsp))
@@ -64,7 +64,7 @@ void init_bstartparm()
 }
 void machbstart_t_init(machbstart_t *initp)
 {
-    memset(initp, 0, sizeof(machbstart_t));
+    memset(initp, 0, sizeof(machbstart_t));  //初始化machbstart_t结构体，清0,并设置一个标志
     initp->mb_migc = MBS_MIGC;
     return;
 }

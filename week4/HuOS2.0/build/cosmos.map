@@ -1,0 +1,164 @@
+
+Merging program properties
+
+Removed property 0xc0000002 to merge hal_start.o (0x3) and init_entry.o (not found)
+
+Discarded input sections
+
+ .note.gnu.property
+                0x0000000000000000       0x20 hal_start.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000002000000                LINEAR_ADDRESS = 0x2000000
+                0xffff800000000000                VIRTUAL_ADDRESS = 0xffff800000000000
+                0x0000000002000000                . = LINEAR_ADDRESS
+                0xffff800002000000                __start_kernel = (. + VIRTUAL_ADDRESS)
+                0x0000000002000000                __begin_start_text = .
+
+.start.text     0x0000000002000000       0xbf
+ *(.start.text)
+ .start.text    0x0000000002000000       0xbf init_entry.o
+                0x0000000002000000                _start
+                0x00000000020000bf                __end_start_text = .
+                0x00000000020000bf                __begin_start_data = .
+
+.start.data     0x00000000020000c0       0x32
+ *(.start.data)
+ .start.data    0x00000000020000c0       0x32 init_entry.o
+                0x00000000020000f2                __end_start_data = .
+                0x00000000020000f2                __begin_start_data_pml4 = .
+
+.start.data.pml4
+ *(.start.data.pml4)
+                0x00000000020000f2                __end_start_data_pml4 = .
+                0xffff8000020000f2                . = (. + VIRTUAL_ADDRESS)
+                0xffff8000020000f2                __begin_entry64_text = .
+
+.entry64.text
+ *(.entry64.text)
+                0xffff8000020000f2                __end_entry64_text = .
+                0xffff8000020000f2                __begin_hwint_text = .
+
+.hwint.text
+ *(.hwint.text)
+                0xffff8000020000f2                __end_hwint_text = .
+                0xffff8000020000f2                __begin_sirq_text = .
+
+.sirq.text
+ *(.sirq.sirq)
+                0xffff8000020000f2                __end_sirq_text = .
+                0xffff8000020000f2                __begin_scall_text = .
+
+.scall.text
+ *(.scall.text)
+                0xffff8000020000f2                __end_scall_text = .
+                0xffff8000020000f2                __begin_sched_text = .
+
+.sched.text
+ *(.sched.text)
+                0xffff8000020000f2                __end_sched_text = .
+                0xffff8000020000f2                __begin_fs_text = .
+
+.fs.text
+ *(.fs.text)
+                0xffff8000020000f2                __end_fs_text = .
+                0xffff8000020000f2                __begin_drive_text = .
+
+.drive.text
+ *(.drive.text)
+                0xffff8000020000f2                __end_drive_text = .
+                0xffff8000020000f2                __begin_text = .
+
+.text           0xffff8000020000f4       0x16 load address 0x00000000020000f4
+ *(.text)
+ *fill*         0xffff8000020000f4        0xc 
+ .text          0xffff800002000100        0xa hal_start.o
+                0xffff800002000100                hal_start
+                0xffff80000200010a                __end_text = .
+                0xffff80000200010a                __begin_spinlock_text = .
+
+.iplt           0xffff80000200010a        0x0 load address 0x000000000200010a
+ .iplt          0xffff80000200010a        0x0 init_entry.o
+
+.rela.dyn       0xffff800002000110        0x0 load address 0x0000000002000110
+ .rela.got      0xffff800002000110        0x0 init_entry.o
+ .rela.iplt     0xffff800002000110        0x0 init_entry.o
+
+.spinlock.text
+ *(.spinlock.text)
+                0xffff80000200010a                __end_spinlock_text = .
+                0xffff80000200010a                __begin_init_text = .
+
+.init.text
+ *(.init.text)
+                0xffff80000200010a                __end_init_text = .
+                0xffff80000200010a                __begin_driver_entry_text = .
+
+.drventry.text
+ *(.drventry.text)
+                0xffff80000200010a                __end_driver_entry_text = .
+                0xffff80000200010a                __begin_data = .
+
+.data           0xffff80000200010c        0x0 load address 0x000000000200010c
+ *(.data)
+ .data          0xffff80000200010c        0x0 hal_start.o
+ *(.bss)
+ .bss           0xffff80000200010c        0x0 hal_start.o
+                0xffff80000200010a                __end_data = .
+                0xffff80000200010a                __begin_rodata = .
+
+.got            0xffff800002000110        0x0 load address 0x0000000002000110
+ .got           0xffff800002000110        0x0 init_entry.o
+
+.got.plt        0xffff800002000110        0x0 load address 0x0000000002000110
+ .got.plt       0xffff800002000110        0x0 init_entry.o
+
+.igot.plt       0xffff800002000110        0x0 load address 0x0000000002000110
+ .igot.plt      0xffff800002000110        0x0 init_entry.o
+
+.rodata
+ *(.rodata)
+ *(.rodata.*)
+                0xffff80000200010a                __end_rodata = .
+                0xffff80000200010a                __begin_kstrtab = .
+
+.eh_frame       0xffff800002000110       0x2c load address 0x0000000002000110
+ .eh_frame      0xffff800002000110       0x2c hal_start.o
+                                         0x30 (size before relaxing)
+
+.kstrtab
+ *(.kstrtab)
+                0xffff80000200013c                __end_kstrtab = .
+                0xffff80000200013c                __begin_apboot_text = .
+
+.apboot.text
+ *(.apboot.text)
+                0xffff80000200013c                __end_apboot_text = .
+                0xffff80000200013c                __begin_apboot_data = .
+
+.apboot.data
+ *(.apboot.data)
+                0xffff80000200013c                __end_apboot_data = .
+                0xffff80000200013c                __begin_kmodsattrb_data = .
+
+.kmodsattrbdata
+ *(.kmodsattrbdata)
+                0xffff80000200013c                __end_kmodsattrb_data = .
+
+.krnl.krnend
+ *(.krnl.krnend)
+                0xffff80000200013c                __end_kernel = .
+LOAD init_entry.o
+LOAD hal_start.o
+OUTPUT(HuOS.elf elf64-x86-64)
+
+.note.GNU-stack
+                0x0000000000000000        0x0
+ .note.GNU-stack
+                0x0000000000000000        0x0 hal_start.o

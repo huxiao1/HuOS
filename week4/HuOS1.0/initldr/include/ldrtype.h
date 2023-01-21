@@ -158,16 +158,17 @@ typedef struct s_RWHDPACK
     u32_t rwhpk_lh;
 
 }__attribute__((packed)) rwhdpach_t;
-#define RAM_USABLE 1
-#define RAM_RESERV 2
-#define RAM_ACPIREC 3
-#define RAM_ACPINVS 4
-#define RAM_AREACON 5
+
+#define RAM_USABLE 1      //可用内存
+#define RAM_RESERV 2      //保留内存，不可使用
+#define RAM_ACPIREC 3     //ACPI表相关的
+#define RAM_ACPINVS 4     //ACPI NVS空间
+#define RAM_AREACON 5     //包含坏内存
 
 typedef struct s_e820{
-    u64_t saddr;    /* start of memory segment8 */
-    u64_t lsize;    /* size of memory segment8 */
-    u32_t type;    /* type of memory segment 4*/
+    u64_t saddr;        /* start of memory segment8 */
+    u64_t lsize;        /* size of memory segment8 */
+    u32_t type;         /* type of memory segment 4*/
 }__attribute__((packed)) e820map_t;
 
 
@@ -238,11 +239,12 @@ typedef struct s_VBEOMINFO
 
 typedef struct s_PIXCL
 {
-    u8_t cl_b;
-    u8_t cl_g;
-    u8_t cl_r;
-    u8_t cl_a;
+    u8_t cl_b; //蓝
+    u8_t cl_g; //绿
+    u8_t cl_r; //红
+    u8_t cl_a; //透明
 }__attribute__((packed)) pixcl_t;
+//通常情况下用pixl_t 和 BGRA宏
 #define BGRA(r,g,b) ((0|(r<<16)|(g<<8)|b))
 typedef u32_t pixl_t;
 #define VBEMODE 1
@@ -354,7 +356,7 @@ typedef struct s_KLFOCPYMBLK
     u64_t sphyadr;
     u64_t ocymsz;
 }__attribute__((packed)) klfocpymblk_t;
-#define MBS_MIGC (u64_t)((((u64_t)'L')<<56)|(((u64_t)'M')<<48)|(((u64_t)'O')<<40)|(((u64_t)'S')<<32)|(((u64_t)'M')<<24)|(((u64_t)'B')<<16)|(((u64_t)'S')<<8)|((u64_t)'P'))
+#define MBS_MIGC (u64_t)((((u64_t)'H')<<56)|(((u64_t)'U')<<48)|(((u64_t)'O')<<40)|(((u64_t)'S')<<32)|(((u64_t)'M')<<24)|(((u64_t)'B')<<16)|(((u64_t)'S')<<8)|((u64_t)'P'))
 
 typedef struct s_MRSDP
 {

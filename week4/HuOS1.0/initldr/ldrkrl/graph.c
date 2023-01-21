@@ -59,11 +59,13 @@ void bmp_print(void *bmfile, machbstart_t *mbsp)
 void logo(machbstart_t *mbsp)
 {
     u32_t retadr = 0, sz = 0;
+    //在映像文件中获取logo.bmp文件
     get_file_rpadrandsz("logo.bmp", mbsp, &retadr, &sz);
     if (0 == retadr)
     {
         kerror("if_getfilerpadrsz err");
     }
+    //显示logo文件中的图像数据
     bmp_print((void *)retadr, mbsp);
 
     return;
@@ -71,12 +73,16 @@ void logo(machbstart_t *mbsp)
 
 void init_graph(machbstart_t *mbsp)
 {
+    //初始化图形数据结构
     graph_t_init(&mbsp->mb_ghparm);
     init_bgadevice(mbsp);
     if (mbsp->mb_ghparm.gh_mode != BGAMODE)
     {
+        //获取VBE模式，通过BIOS中断
         get_vbemode(mbsp);
+        //获取一个具体VBE模式的信息，通过BIOS中断
         get_vbemodeinfo(mbsp);
+        //设置VBE模式，通过BIOS中断
         set_vbemodeinfo();
     }
 

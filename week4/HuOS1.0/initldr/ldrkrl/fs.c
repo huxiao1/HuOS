@@ -73,31 +73,43 @@ int move_krlimg(machbstart_t *mbsp, u64_t cpyadr, u64_t cpysz)
     return 2;
 }
 
+//放置内核文件
 void init_krlfile(machbstart_t *mbsp)
 {
+    /*
+    r_file_to_padr由于内核是代码数据，所以必须要复制到指定的内存空间中。在映像中查找相应的文件并复制到对应的地址，返回文件的大小，这里是查找kernel.bin文件
+    IMGKRNL_PHYADR:内核映像在物理内存中的位置
+    */
     u64_t sz = r_file_to_padr(mbsp, IMGKRNL_PHYADR, "kernel.bin");
     if (0 == sz)
     {
         kerror("r_file_to_padr err");
     }
+    //放置完成后更新机器信息结构中的数据
     mbsp->mb_krlimgpadr = IMGKRNL_PHYADR;
     mbsp->mb_krlsz = sz;
+    //mbsp->mb_nextwtpadr始终要保持指向下一段空闲内存的首地址
     mbsp->mb_nextwtpadr = P4K_ALIGN(mbsp->mb_krlimgpadr + mbsp->mb_krlsz);
     mbsp->mb_kalldendpadr = mbsp->mb_krlimgpadr + mbsp->mb_krlsz;
     return;
 }
 
+//放置字库文件
 void init_defutfont(machbstart_t *mbsp)
 {
     u64_t sz = 0;
+    //获取下一段空闲内存空间的首地址
     u32_t dfadr = (u32_t)mbsp->mb_nextwtpadr;
+    //在映像中查找相应的文件，并复制到对应的地址，并返回文件的大小，这里是查找font.fnt文件
     sz = r_file_to_padr(mbsp, dfadr, "font.fnt");
     if (0 == sz)
     {
         kerror("r_file_to_padr err");
     }
+    //放置完成后更新机器信息结构中的数据
     mbsp->mb_bfontpadr = (u64_t)(dfadr);
     mbsp->mb_bfontsz = sz;
+    //更新机器信息结构中下一段空闲内存的首地址
     mbsp->mb_nextwtpadr = P4K_ALIGN((u32_t)(dfadr) + sz);
     mbsp->mb_kalldendpadr = mbsp->mb_bfontpadr + mbsp->mb_bfontsz;
     return;

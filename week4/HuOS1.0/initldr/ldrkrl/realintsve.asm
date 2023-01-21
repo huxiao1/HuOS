@@ -61,33 +61,33 @@ _getmmap:
 	push ss
 	mov esi,0
 	mov dword[E80MAP_NR],esi
-	mov dword[E80MAP_ADRADR],E80MAP_ADR
+	mov dword[E80MAP_ADRADR],E80MAP_ADR  ;e820map结构体开始地址
 
 	xor ebx,ebx
-	mov edi,E80MAP_ADR
+	mov edi,E80MAP_ADR                   ;此时edi是e820map开始地址，esi是结构数组元素个数
 loop:
-	mov eax,0e820h
-	mov ecx,20
-	mov edx,0534d4150h
-	int 15h
+	mov eax,0e820h                       ;获取e820map结构参数
+	mov ecx,20                           ;e820map结构大小
+	mov edx,0534d4150h                   ;获取e820map结构参数必须是这个数据
+	int 15h                              ;BIOS的15h中断
 	jc .1
 
 	add edi,20
-	cmp edi,E80MAP_ADR+0x1000
+	cmp edi,E80MAP_ADR+0x1000            ;0x1000用来作为一个地址值来限制循环的次数
 	jg .1
 
 	inc esi
 
 	cmp ebx,0
-	jne loop
+	jne loop                              ;循环获取e820map结构
 
 	jmp .2
 
 .1:
-	mov esi,0
+	mov esi,0                              ;出错处理，e820map结构数组元素个数为0
 
 .2:
-	mov dword[E80MAP_NR],esi
+	mov dword[E80MAP_NR],esi               ;e820map结构数组元素个数
 	pop ss
 	pop es
 	pop ds

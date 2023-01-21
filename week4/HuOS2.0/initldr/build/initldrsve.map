@@ -1,0 +1,63 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000001000                . = 0x1000
+                0x0000000000001000                __start_ldr = .
+                0x0000000000001000                __begin_start_text = .
+
+.start.text
+ *(.start.text)
+                0x0000000000001000                __end_start_text = .
+                0x0000000000091000                //. = (0x90000 + .)
+                0x0000000000001000                __begin_text = .
+
+.text           0x0000000000001000      0x1b7
+ *(.text)
+ .text          0x0000000000001000      0x1b7 realintsve.o
+                0x0000000000001000                _start
+                0x00000000000011b7                __end_text = .
+                0x00000000000011b7                __begin_data = .
+
+.iplt           0x00000000000011b7        0x0
+ .iplt          0x00000000000011b7        0x0 realintsve.o
+
+.rel.dyn        0x00000000000011b8        0x0
+ .rel.got       0x00000000000011b8        0x0 realintsve.o
+ .rel.iplt      0x00000000000011b8        0x0 realintsve.o
+
+.data
+ *(.data)
+                0x00000000000011b7                __end_data = .
+                0x00000000000011b7                __begin_rodata = .
+
+.got            0x00000000000011b8        0x0
+ .got           0x00000000000011b8        0x0 realintsve.o
+
+.got.plt        0x00000000000011b8        0x0
+ .got.plt       0x00000000000011b8        0x0 realintsve.o
+
+.igot.plt       0x00000000000011b8        0x0
+ .igot.plt      0x00000000000011b8        0x0 realintsve.o
+
+.rodata
+ *(.rodata)
+ *(.rodata.*)
+                0x00000000000011b7                __end_rodata = .
+                0x00000000000011b7                __begin_kstrtab = .
+
+.kstrtab
+ *(.kstrtab)
+                0x00000000000011b7                __end_kstrtab = .
+                0x00000000000011b7                __begin_bss = .
+
+.bss
+ *(.bss)
+                0x00000000000011b7                __end_bss = .
+                0x00000000000011b7                __end_ldr = .
+LOAD realintsve.o
+OUTPUT(initldrsve.elf elf32-i386)
