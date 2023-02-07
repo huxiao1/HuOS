@@ -1,3 +1,6 @@
+# Rambling
+## [Why does the code address always start from 0x400000, but the starting address of the compiled elf header starts from 0?](./talk/talk1.md)
+
 # HuOS: A hybrid kernel designed by me.
 ## Overview
 ## [First -- Prototype](./week1/README.md)  
