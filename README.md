@@ -25,4 +25,4 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [建立计算机](./week4/Build_Com/README.md)
 #### [建造二级引导器](./week4/Build_sec_bootstrap/README.md)
 #### [探查和收集信息](./week4/Get_Info/README.md)
-
+#### [实现板级初始化并运行第一个C函数](./week4/init_run_c_code/README.md)
