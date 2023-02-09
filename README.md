@@ -1,6 +1,3 @@
-# Rambling
-## [Why does the code address always start from 0x400000, but the starting address of the compiled elf header starts from 0?](./talk/talk1.md)
-
 # HuOS: A hybrid kernel designed by me.
 ## Overview
 ## [First -- Prototype](./week1/README.md)  
@@ -23,7 +20,7 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ![lock2](./images/lock2.png)
 
 ## [Forth -- Design](./week4/README.md)
-### [Code](./week4/HuOS2.0/)
+### [Code](./week4/HuOS3.0/)
 ### Boot Initialization
 #### [建立计算机](./week4/Build_Com/README.md)
 #### [建造二级引导器](./week4/Build_sec_bootstrap/README.md)
