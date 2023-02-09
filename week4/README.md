@@ -1,6 +1,6 @@
 此章节为内核设计部分：   
 ### Boot Initialization
-### [Code](./HuOS1.0/)
+### [Code](./HuOS3.0/)
 #### [Build Computer](./Build_Com/README.md)  
 ![结果](./Build_Com/images/res1.png)
 #### [Build Secondary Director](./Build_sec_bootstrap/README.md)
@@ -13,5 +13,5 @@
 #### [Implement Board-level Initialization & Run The First C Function](./init_run_c_code/README.md)
 ![结果](./images/res3.jpg)
 **这节还存在的问题**  
-1. 初始logo没有了
+1. 初始logo没有了  
 解决: init_graph() -> logo(mbsp);后加延时能看到
