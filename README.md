@@ -27,3 +27,5 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [探查和收集信息](./week4/Get_Info/README.md)
 #### [实现板级初始化并运行第一个C函数](./week4/init_run_c_code/README.md)
 ![init](./week4/images/res3.jpg)
+##### [Linux初始化----GRUB与VMLinuz结构](./week4/linux_init1/GRUB_VMLinuz.md)
+##### [Linux初始化----从_start到第一个进程](./week4/linux_init2/first_process.md)

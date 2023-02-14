@@ -14,4 +14,6 @@
 ![结果](./images/res3.jpg)
 **这节还存在的问题**  
 1. 初始logo没有了  
-解决: init_graph() -> logo(mbsp);后加延时能看到
+* 解决: init_graph() -> logo(mbsp);后加延时能看到
+#### [Linux Initilization ---- Grub and VMLinuz](./linux_init1/GRUB_VMLinuz.md)
+#### [Linux Initilization ---- From _start to First Process](./linux_init2/first_process.md)
