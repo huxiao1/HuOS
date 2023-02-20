@@ -94,7 +94,7 @@ The line ```$(obj)/bzImage: $(obj)/setup.bin $(obj)/vmlinux.bin $(obj)/tools/bui
 
 The line $(call if_changed,image) invokes a Makefile macro if_changed, which checks if the dependencies of the bzImage have changed and executes the rule only if they have changed.  
 
-The line ```@$(kecho) 'Kernel: $@ is ready' ' (#'cat .version')'``` is a message that is displayed by the Makefile when the rule has been executed successfully. The $@ symbol is a special symbol in Makefiles that refers to the target of the rule, which in this case is $(obj)/bzImage. The cat .version command retrieves the contents of the file .version and displays it along with the message.  
+The line ```@$(kecho) 'Kernel: $@ is ready' ' (#'cat .version')'``` is a message that is displayed by the Makefile when the rule has been executed successfully. The ```$@ symbol``` is a special symbol in Makefiles that refers to the target of the rule, which in this case is $(obj)/bzImage. The cat .version command retrieves the contents of the file .version and displays it along with the message.  
 
 In summary, this Makefile rule builds the bzImage file, which is a compressed Linux kernel image, by combining ```$(obj)/setup.bin, $(obj)/vmlinux.bin, and $(obj)/tools/build``` and compressing them into a single file. The rule is executed only if the dependencies have changed and displays a message indicating that the kernel is ready once the rule has been executed successfully.  
 生成 bzImage 文件需要三个依赖文件：setup.bin、vmlinux.bin和linux/arch/x86/boot/tools目录下的build。  
@@ -402,3 +402,4 @@ diskboot.img知道后续每个文件的位置，会继续通过BIOS中断读取�
         * 调用linux模块中的initrd命令，填充initramfs信息，然后Grub会把控制权移交给内核。
         * 内核此时开始执行，同时也就可以读取linux_kernel_params结构体的数据了
         * boot阶段结束，开始进入startup阶段。
+8. 加载VMlinuz
