@@ -19,9 +19,8 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ![lock1](./images/lock1.png)
 ![lock2](./images/lock2.png)
 
-## [Forth -- Design](./week4/README.md)
+## [Forth -- Design(Boot Initialization)](./week4/README.md)
 ### [Code](./week4/HuOS3.0/)
-### Boot Initialization
 #### [建立计算机](./week4/Build_Com/README.md)
 #### [建造二级引导器](./week4/Build_sec_bootstrap/README.md)
 #### [探查和收集信息](./week4/Get_Info/README.md)
@@ -29,3 +28,18 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ![init](./week4/images/res3.jpg)
 ##### [Linux初始化----GRUB与VMLinuz结构](./week4/linux_init1/GRUB_VMLinuz.md)
 ##### [Linux初始化----从_start到第一个进程](./week4/linux_init2/first_process.md)
+
+## [Fifth -- Design(Memory)](./week5/README.md)
+### [Code](./week5/HuOS4.0/)
+#### [划分与组织内存](./week5/Divide_Organize_Memory1/README.md)
+#### [内存页面初始化](./week5/Divide_Organize_Memory2/README.md)
+#### [内存页的分配与释放(内存管理)](./week5/Divide_Organize_Memory3/README.md)
+
+
+
+
+
+
+
+
+
