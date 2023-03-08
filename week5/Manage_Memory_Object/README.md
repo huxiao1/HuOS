@@ -9,6 +9,9 @@
     - [分配内存对象的接口](#分配内存对象的接口)
     - [查找内存对象容器](#查找内存对象容器)
     - [建立内存对象容器](#建立内存对象容器)
+    - [分配内存对象](#分配内存对象)
+- [释放内存对象](#释放内存对象)
+    - [释放内存对象的接口](#释放内存对象的接口)
 <!-- tocstop -->
 
 # 总结
@@ -558,7 +561,8 @@ bool_t kmsob_extn_pages(kmsob_t *kmsp)
     for (; tmpfoh < fohend;)
     {
         if ((ap + (uint_t)kmsp->so_objsz) <= (uint_t)vadre)
-        {//在扩展的内存空间中建立内存对象
+        {
+            //在扩展的内存空间中建立内存对象
             freobjh_t_init(tmpfoh, 0, (void *)tmpfoh);
             list_add(&tmpfoh->oh_list, &kmsp->so_frelst);
             kmsp->so_mobjnr++;
@@ -573,7 +577,55 @@ bool_t kmsob_extn_pages(kmsob_t *kmsp)
     return TRUE;
 }
 ```
+## 分配内存对象
+有了内存对象容器，就可以分配内存对象了  
+```c
+//判断内存对象容器中有没有内存对象
+uint_t scan_kmsob_objnr(kmsob_t *kmsp)
+{
+    if (0 < kmsp->so_fobjnr)
+    {
+        return kmsp->so_fobjnr;
+    }
+    return 0;
+}
 
+//实际分配内存对象
+void *kmsob_new_opkmsob(kmsob_t *kmsp, size_t msz)
+{
+    //获取kmsob_t中的so_frelst链表头的第一个空闲内存对象
+    freobjh_t *fobh = list_entry(kmsp->so_frelst.next, freobjh_t, oh_list);
+    //从链表中脱链
+    list_del(&fobh->oh_list);
+    //kmsob_t中的空闲对象计数减一
+    kmsp->so_fobjnr--;
+    //返回内存对象首地址
+    return (void *)(fobh);
+}
 
+void *kmsob_new_onkmsob(kmsob_t *kmsp, size_t msz)
+{
+    void *retptr = NULL;
+    cpuflg_t cpuflg;
+    knl_spinlock_cli(&kmsp->so_lock, &cpuflg);
+    //如果内存对象容器中没有空闲的内存对象了就需要扩展内存对象容器的内存了
+    if (scan_kmsob_objnr(kmsp) < 1)
+    {//扩展内存对象容器的内存
+        if (kmsob_extn_pages(kmsp) == FALSE)
+        {
+            retptr = NULL;
+            goto ret_step;
+        }
+    }
+    //实际分配内存对象
+    retptr = kmsob_new_opkmsob(kmsp, msz);
+ret_step:
+    knl_spinunlock_sti(&kmsp->so_lock, &cpuflg);
+    return retptr;
+}
+```
+分配内存对象的核心操作就是，kmsob_new_opkmsob 函数从空闲内存对象链表头中取出第一个内存对象，返回它的首地址。这个算法非常高效，无论内存对象容器中的内存对象有多少，kmsob_new_opkmsob 函数的操作始终是固定的，而如此高效的算法得益于我们先进的数据结构设计。  
 
-
+# 释放内存对象
+释放内存对象，就是要把内存对象还给它所归属的内存对象容器。其逻辑就是**根据释放内存对象的地址和大小，找到对应的内存对象容器，然后把该内存对象加入到对应内存对象容器的空闲链表上**，最后看要不要释放内存对象容器占用的物理内存页面。  
+## 释放内存对象的接口
