@@ -34,7 +34,7 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [划分与组织内存](./week5/Divide_Organize_Memory1/README.md)
 #### [内存页面初始化](./week5/Divide_Organize_Memory2/README.md)
 #### [内存页的分配与释放(内存管理)](./week5/Divide_Organize_Memory3/README.md)
-
+#### [如何管理内存对象](./week5/Manage_Memory_Object/README.md)
 
 
 
