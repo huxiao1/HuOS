@@ -12,6 +12,9 @@
     - [分配内存对象](#分配内存对象)
 - [释放内存对象](#释放内存对象)
     - [释放内存对象的接口](#释放内存对象的接口)
+    - [查找内存对象容器](#查找内存对象容器)
+    - [释放内存对象](#释放内存对象_r)
+    - [销毁内存对象容器](#销毁内存对象容器)
 <!-- tocstop -->
 
 # 总结
@@ -127,8 +130,9 @@ typedef struct s_MSOMDC
     //mc_lst[4]=16个连续页面的msadsc_t
     msclst_t mc_lst[MSCLST_MAX];
     uint_t mc_msanr;   //总共多个msadsc_t结构
+    //mc_list挂载扩展结构kmbext_t
     list_h_t mc_list;
-    //内存对象容器第一个占用msadsc_t
+    //内存对象容器本身第一个占用的msadsc_t
     list_h_t mc_kmobinlst;
     //内存对象容器第一个占用msadsc_t对应的连续的物理内存页面数
     uint_t mc_kmobinpnr;
@@ -629,3 +633,267 @@ ret_step:
 # 释放内存对象
 释放内存对象，就是要把内存对象还给它所归属的内存对象容器。其逻辑就是**根据释放内存对象的地址和大小，找到对应的内存对象容器，然后把该内存对象加入到对应内存对象容器的空闲链表上**，最后看要不要释放内存对象容器占用的物理内存页面。  
 ## 释放内存对象的接口
+```c
+kmsob.c
+
+bool_t kmsob_delete_core(void *fadrs, size_t fsz)
+{
+    kmsobmgrhed_t *kmobmgrp = &memmgrob.mo_kms
+obmgr;
+    bool_t rets = FALSE;
+    koblst_t *koblp = NULL;
+    kmsob_t *kmsp = NULL;
+    cpuflg_t cpuflg;
+    knl_spinlock_cli(&kmobmgrp->ks_lock, &cpuflg);
+    //根据释放内存对象的大小在kmsobmgrhed_t中查找并返回koblst_t，在其中挂载着对应的kmsob_t，这个在前面已经写好了
+    koblp = onmsz_retn_koblst(kmobmgrp, fsz);
+    if (NULL == koblp)
+    {
+        rets = FALSE;
+        goto ret_step;
+    }
+    //查找释放内存对象所属的kmsob_t结构
+    kmsp = onkoblst_retn_delkmsob(koblp, fadrs, fsz);
+    if (NULL == kmsp)
+    {
+        rets = FALSE;
+        goto ret_step;
+    }
+    //释放内存对象
+    rets = kmsob_delete_onkmsob(kmsp, fadrs, fsz);
+    if (FALSE == rets)
+    {
+        rets = FALSE;
+        goto ret_step;
+    }
+    //销毁内存对象容器
+    if (_destroy_kmsob(kmobmgrp, koblp, kmsp) == FALSE)
+    {
+        rets = FALSE;
+        goto ret_step;
+    }
+    rets = TRUE;
+ret_step:
+    knl_spinunlock_sti(&kmobmgrp->ks_lock, &cpuflg);
+    return rets;
+}
+
+//释放内存对象接口
+bool_t kmsob_delete(void *fadrs, size_t fsz)
+{
+    //对参数进行检查，但是多了对内存对象地址的检查
+    if (NULL == fadrs || 1 > fsz || 2048 < fsz)
+    {
+        return FALSE;
+    }
+    //调用释放内存对象的核心函数
+    return kmsob_delete_core(fadrs, fsz);
+}
+```
+等到 kmsob_delete 函数检查参数通过之后，就调用释放内存对象的核心函数 kmsob_delete_core，在这个函数中，一开始根据释放内存对象大小，找到挂载其 kmsob_t 结构的 koblst_t 结构，接着又做了一系列的操作。  
+## 查找内存对象容器
+释放内存对象，首先要找到这个将要释放的内存对象所属的内存对象容器。释放时的查找和分配时的查找不一样，因为要检查释放的内存对象是不是属于该内存对象容器。  
+```c
+//检查释放的内存对象是不是在kmsob_t结构中
+//fsz释放内存对象的大小
+//fadrs释放内存对象的地址
+//kmsp内存对象容器的首地址
+kmsob_t *scan_delkmsob_isok(kmsob_t *kmsp, void *fadrs, size_t fsz)
+{
+    //检查释放内存对象的地址是否落在kmsob_t结构的地址区间
+    if ((adr_t)fadrs >= (kmsp->so_vstat + sizeof(kmsob_t)) && ((adr_t)fadrs + (adr_t)fsz) <= kmsp->so_vend)
+    {
+        //检查释放内存对象的大小是否小于等于kmsob_t内存对象容器的对象大小
+        if (fsz <= kmsp->so_objsz)
+        {
+            return kmsp;
+        }
+    }
+    if (1 > kmsp->so_mextnr)
+    {
+        //如果kmsob_t结构没有扩展空间，直接返回
+        return NULL;
+    }
+    kmbext_t *bexp = NULL;
+    list_h_t *tmplst = NULL;
+    //遍历kmsob_t结构中的每个扩展空间
+    list_for_each(tmplst, &kmsp->so_mextlst)
+    {
+        bexp = list_entry(tmplst, kmbext_t, mt_list);
+        //检查释放内存对象的地址是否落在扩展空间的地址区间
+        if ((adr_t)fadrs >= (bexp->mt_vstat + sizeof(kmbext_t)) && ((adr_t)fadrs + (adr_t)fsz) <= bexp->mt_vend)
+        {
+            //同样的要检查大小
+            if (fsz <= kmsp->so_objsz)
+            {
+                return kmsp;
+            }
+        }
+    }
+    return NULL;
+}
+
+//查找释放内存对象所属的kmsob_t结构
+kmsob_t *onkoblst_retn_delkmsob(koblst_t *koblp, void *fadrs, size_t fsz)
+{
+    v *kmsp = NULL, *tkmsp = NULL;
+    list_h_t *tmplst = NULL;
+    //看看上次刚刚操作的kmsob_t结构
+    //如果释放的内存对象是属于这个kmsob_t结构，直接返回
+    //ol_cahe是koblst_t结构中的一个成员，是最近一次查找的kmsob_t结构的指针
+    kmsp = scan_delkmsob_isok(koblp->ol_cahe, fadrs, fsz);
+    if (NULL != kmsp)
+    {
+        return kmsp;
+    }
+    if (0 < koblp->ol_emnr)
+    {
+        //遍历挂载koblp->ol_emplst链表上的每个kmsob_t结构
+        //ol_emplst是koblst_t结构中的一个成员，是挂载kmsob_t结构的链表
+        list_for_each(tmplst, &koblp->ol_emplst)
+        {
+            //取出kmsob_t结构的首地址
+            tkmsp = list_entry(tmplst, kmsob_t, so_list);
+            //检查释放的内存对象是不是属于这个kmsob_t结构
+            kmsp = scan_delkmsob_isok(tkmsp, fadrs, fsz);
+            if (NULL != kmsp)
+            {
+                return kmsp;
+            }
+        }
+    }
+    return NULL;
+}
+```
+搜索对应 koblst_t 结构中的每个 kmsob_t 结构体，随后进行检查，检查了 kmsob_t 结构的自身内存区域和扩展内存区域。即比较释放内存对象的地址是不是落在它们的内存区间中，其大小是否合乎要求。  
+## 释放内存对象_r
+找到释放内存对象的 kmsob_t 结构后就可以释放内存对象了，就是把这块内存空间还给内存对象容器  
+```c
+bool_t kmsob_del_opkmsob(kmsob_t *kmsp, void *fadrs, size_t fsz)
+{
+    //so_mobjnr是kmsob_t结构中的一个成员，是内存对象容器中的对象总数
+    //so_fobjnr是kmsob_t结构中的一个成员，是内存对象容器中的空闲对象总数
+    if ((kmsp->so_fobjnr + 1) > kmsp->so_mobjnr)
+    {
+        return FALSE;
+    }
+    //让freobjh_t结构重新指向要释放的内存空间
+    freobjh_t *obhp = (freobjh_t *)fadrs;
+    //重新初始化块内存空间
+    freobjh_t_init(obhp, 0, obhp);
+    //加入kmsob_t结构的空闲链表
+    list_add(&obhp->oh_list, &kmsp->so_frelst);
+    //kmsob_t结构的空闲对象计数加一
+    kmsp->so_fobjnr++;
+    return TRUE;
+}
+
+//释放内存对象
+bool_t kmsob_delete_onkmsob(kmsob_t *kmsp, void *fadrs, size_t fsz)
+{
+    bool_t rets = FALSE;
+    cpuflg_t cpuflg;
+    //对kmsob_t结构加锁
+    knl_spinlock_cli(&kmsp->so_lock, &cpuflg);
+    //实际完成内存对象释放
+    if (kmsob_del_opkmsob(kmsp, fadrs, fsz) == FALSE)
+    {
+        rets = FALSE;
+        goto ret_step;
+    }
+    rets = TRUE;
+ret_step:
+    //对kmsob_t结构解锁
+    knl_spinunlock_sti(&kmsp->so_lock, &cpuflg);
+    return rets;
+}
+```
+kmsob_delete_onkmsob 函数调用 kmsob_del_opkmsob 函数。其核心机制就是把要释放内存对象的空间，重新初始化，变成一个 freobjh_t 结构的实例变量，最后把这个 freobjh_t 结构加入到 kmsob_t 结构中空闲链表中，这就实现了内存对象的释放。  
+## 销毁内存对象容器
+如果我们释放了所有的内存对象，就会出现空的内存对象容器。如果下一次请求同样大小的内存对象，那么这个空的内存对象容器还能继续复用，提高性能。但是你有没有想到，频繁请求的是不同大小的内存对象，那么空的内存对象容器会越来越多，这会占用大量内存，所以我们必须要把空的内存对象容器销毁。  
+```c
+//检查内存对象容器是否可以销毁
+uint_t scan_freekmsob_isok(kmsob_t *kmsp)
+{
+    //当内存对象容器的总对象个数等于空闲对象个数时，说明这内存对象容器空闲
+    if (kmsp->so_mobjnr == kmsp->so_fobjnr)
+    {
+        return 2;
+    }
+    return 1;
+}
+
+//销毁内存对象容器
+bool_t _destroy_kmsob_core(kmsobmgrhed_t *kmobmgrp, koblst_t *koblp, kmsob_t *kmsp)
+{
+    list_h_t *tmplst = NULL;
+    msadsc_t *msa = NULL;
+    //mscp是msclst_t结构的数组
+    msclst_t *mscp = kmsp->so_mc.mc_lst;
+    list_del(&kmsp->so_list);
+
+    //ol_emnr是koblst_t结构中的一个成员，是内存对象容器的个数
+    koblp->ol_emnr--;
+    //ks_msobnr是kmsobmgrhed_t结构中的一个成员，是内存对象容器的个数
+    kmobmgrp->ks_msobnr--;
+
+    //释放内存对象容器扩展空间的物理内存页面
+    //遍历kmsob_t结构中的so_mc.mc_lst数组
+    for (uint_t j = 0; j < MSCLST_MAX; j++)
+    {
+        //ms_msanr是msclst_t结构中的一个成员，是内存对象容器中的扩展空间的物理内存页面个数
+        if (0 < mscp[j].ml_msanr)
+        {
+            //遍历每个so_mc.mc_lst数组中的msadsc_t结构
+            list_for_each_head_dell(tmplst, &mscp[j].ml_list)
+            {
+                msa = list_entry(tmplst, msadsc_t, md_list);
+                list_del(&msa->md_list);
+                //msadsc_t脱链
+                //释放msadsc_t对应的物理内存页面
+                //ml_ompnr是msadsc_t结构中的一个成员，是物理内存页面的个数
+                if (mm_merge_pages(&memmgrob, msa, (uint_t)mscp[j].ml_ompnr) == FALSE)
+                {
+                    system_error("_destroy_kmsob_core mm_merge_pages FALSE2\n");
+                }
+            }
+        }
+    }
+
+    //释放内存对象容器本身占用的物理内存页面
+    //遍历每个so_mc.mc_kmobinlst中的msadsc_t结构。它只会遍历一次
+    //mc_kmobinlst是kmsob_t结构中的一个成员，是一个链表，内存对象容器第一个msadsc_t结构
+    list_for_each_head_dell(tmplst, &kmsp->so_mc.mc_kmobinlst)
+    {
+        msa = list_entry(tmplst, msadsc_t, md_list);
+        list_del(&msa->md_list);
+        //msadsc_t脱链
+        //释放msadsc_t对应的物理内存页面
+        if (mm_merge_pages(&memmgrob, msa, (uint_t)kmsp->so_mc.mc_kmobinpnr) == FALSE)
+        {
+            system_error("_destroy_kmsob_core mm_merge_pages FALSE2\n");
+        }
+    }
+    return TRUE;
+}
+
+//销毁内存对象容器
+bool_t _destroy_kmsob(kmsobmgrhed_t *kmobmgrp, koblst_t *koblp, kmsob_t *kmsp)
+{
+    //看看能不能销毁
+    uint_t screts = scan_freekmsob_isok(kmsp);
+    if (2 == screts)
+    {
+        //调用销毁内存对象容器的核心函数
+        return _destroy_kmsob_core(kmobmgrp, koblp, kmsp);
+    }
+    return FALSE;
+}
+```
+首先会检查一下内存对象容器是不是空闲的，如果空闲，就调用销毁内存对象容器的核心函数 _destroy_kmsob_core。在 _destroy_kmsob_core 函数中，首先要释放内存对象容器的扩展空间所占用的物理内存页面，最后才可以释放内存对象容器自身占用物理内存页面。 此顺序不可改变，因为扩展空间的物理内存页面对应的 msadsc_t 结构，它就挂载在 kmsob_t 结构的 so_mc.mc_lst 数组中。  
+
+1. 我们发现，在应用程序中可以使用 malloc 函数动态分配一些小块内存，其实这样的场景在内核中也是比比皆是。比如，内核经常要动态创建数据结构的实例变量，就需要分配小块的内存空间。
+2. 为了实现内存对象的表示、分配和释放功能，我们定义了内存对象和内存对象容器的数据结构 freobjh_t、kmsob_t，并为了管理 kmsob_t 结构又定义了 kmsobmgrhed_t 结构。
+3. 我们写好了初始化 kmsobmgrhed_t 结构的函数，并在 init_kmsob 中调用了它，进而又被 init_memmgr 函数调用，由于 kmsobmgrhed_t 结构是为了管理 kmsob_t 结构的所以在一开始就要被初始化。
+4. 我们基于这些数据结构实现了内存对象的分配和释放。
+
