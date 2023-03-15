@@ -6,6 +6,12 @@
     - [虚拟地址空间释放接口](#虚拟地址空间释放接口)
     - [释放时查找虚拟地址区间](#释放时查找虚拟地址区间)
 - [测试环节：虚拟空间能正常访问么](#测试环节虚拟空间能正常访问么)
+    - [准备工作](#准备工作)
+    - [异常情况与原因分析](#异常情况与原因分析)
+    - [开始处理缺页异常](#开始处理缺页异常)
+    - [缺页地址是否合法](#缺页地址是否合法)
+    - [映射物理内存页面](#映射物理内存页面)
+- [总结](#总结)
 <!-- tocstop -->
 
 # 虚拟地址的空间的分配与释放
@@ -326,27 +332,261 @@ kmvarsdsc_t *vma_del_find_kmvarsdsc(virmemadrs_t *vmalocked, adr_t start, size_t
 释放时，查找虚拟地址区间的函数非常简单，仅仅是检查释放的虚拟地址空间是否落在查找 kmvarsdsc_t 结构表示的虚拟地址区间中，而可能的四种变换形式，交给核心释放函数处理。  
 
 # 测试环节：虚拟空间能正常访问么
+进入测试环节，试一试访问一下分配的虚拟地址空间  
+## 准备工作
+想要访问一个虚拟地址空间，当然需要先分配一个虚拟地址空间，所以我们要写点测试代码，分配一个虚拟地址空间并访问它  
+```c
+//测试函数
+void test_vadr()
+{
+    //分配一个0x1000大小的虚拟地址空间
+    adr_t vadr = vma_new_vadrs(&initmmadrsdsc, NULL, 0x1000, 0, 0);
+    //返回NULL表示分配失败
+    if(NULL == vadr)
+    {
+        kprint("分配虚拟地址空间失败\n");
+    }
+    //在刷屏幕上打印分配虚拟地址空间的开始地址
+    kprint("分配虚拟地址空间地址:%x\n", vadr);
+    kprint("开始写入分配虚拟地址空间\n");
+    //访问虚拟地址空间，把这空间全部设置为0
+    hal_memset((void*)vadr, 0, 0x1000);
+    kprint("结束写入分配虚拟地址空间\n");
+    return;
+}
 
+void init_kvirmemadrs()
+{
+    //……
+    //调用测试函数
+    test_vadr();
+    return;
+}
+```
+这个在 init_kvirmemadrs 函数的最后调用的 test_vadr 函数，一旦执行，一定会发生异常。为了显示这个异常，我们要在异常分发器函数中写点代码。  
+```c
+HuOS/hal/x86/halintupt.c
 
+void hal_fault_allocator(uint_t faultnumb, void *krnlsframp)
+{
+    //打印异常号
+    kprint("faultnumb is :%d\n", faultnumb);
+    //如果异常号等于14则是内存缺页异常
+    if (faultnumb == 14)
+    {
+        //打印缺页地址，这地址保存在CPU的CR2寄存器中
+        kprint("异常地址:%x,此地址禁止访问\n", read_cr2());
+    }
+    //死机，不让这个函数返回了
+    die(0);
+    return;
+}
+```
+## 异常情况与原因分析
+![exec](./images/exec.png)  
+显示我们分配了 0x1000 大小的虚拟地址空间，其虚拟地址是 0x5000，接着对这个地址进行访问，最后产生了缺页异常，缺页的地址正是我们分配的虚拟空间的开始地址。  
 
+**为什么会发生这个缺页异常呢？**  
+因为我们访问了一个虚拟地址，这个虚拟地址由 CPU 发送给 MMU，而 MMU 无法把它转换成对应的物理地址，CPU 的那条访存指令无法执行了，因此就产生一个缺页异常。于是，CPU 跳转到缺页异常处理的入口地址（kernel.asm 文件中的 exc_page_fault 标号处）开始执行代码，处理这个缺页异常。  
 
+**那我们可不可以分配虚拟地址空间时，就分配物理内存页面并建立好对应的 MMU 页表呢？**  
+这当然可以解决问题，但是现实中往往是等到发生缺页异常了，才分配物理内存页面，建立对应的 MMU 页表。这种延迟内存分配技术在系统工程中非常有用，因为它能最大限度的节约物理内存。分配的虚拟地址空间，只有实际访问到了才分配对应的物理内存页面。  
+## 开始处理缺页异常
+缺页异常是从 kernel.asm 文件中的 exc_page_fault 标号处开始，但它只是保存了 CPU 的上下文，然后调用了内核的通用异常分发器函数，最后由异常分发器函数调用不同的异常处理函数，如果是缺页异常，就要调用缺页异常处理的接口函数。  
+```c
+//缺页异常处理接口
+sint_t vma_map_fairvadrs(mmadrsdsc_t *mm, adr_t vadrs)
+{
+    //对参数进行检查
+    if ((0x1000 > vadrs) || (USER_VIRTUAL_ADDRESS_END < vadrs) || (NULL == mm))
+    {
+        return -EPARAM;
+    }
+    //进行缺页异常的核心处理
+    return vma_map_fairvadrs_core(mm, vadrs);
+}
 
+//由异常分发器调用的接口
+sint_t krluserspace_accessfailed(adr_t fairvadrs)
+{
+    //这里应该获取当前进程的mm，但是现在我们没有进程，才initmmadrsdsc代替
+    mmadrsdsc_t* mm = &initmmadrsdsc;
+    //应用程序的虚拟地址不可能大于USER_VIRTUAL_ADDRESS_END
+    if(USER_VIRTUAL_ADDRESS_END < fairvadrs)
+    {
+        return -EACCES;
+    }
+    return vma_map_fairvadrs(mm, fairvadrs);
+}
+```
+在 HuOS/hal/x86/halintupt.c 文件的异常分发器函数中来调用它
+```c
+void hal_fault_allocator(uint_t faultnumb, void *krnlsframp)
+{
+    adr_t fairvadrs;
+    kprint("faultnumb is :%d\n", faultnumb);
+    if (faultnumb == 14)
+    {
+        //获取缺页的地址
+        fairvadrs = (adr_t)read_cr2();
+        kprint("异常地址:%x,此地址禁止访问\n", fairvadrs);
+        if (krluserspace_accessfailed(fairvadrs) != 0)
+        {
+            //处理缺页失败就死机
+            system_error("缺页处理失败\n");
+        }
+        //成功就返回
+        return;
+    }
+    die(0);
+    return;
+}
+```
+在这个上下文中，read_cr2 函数用于读取 x86 架构处理器的 CR2 寄存器的值。
 
+CR2 寄存器用于存储最近发生的页错误（Page Fault）的线性地址。在这个代码片段中，hal_fault_allocator 函数处理硬件抛出的异常。当发生页错误时（faultnumb 等于 14），read_cr2 函数被调用，以获取发生页错误的线性地址并将其存储在 fairvadrs 变量中。
 
+然后，代码检查这个地址是否属于用户空间。如果是用户空间地址并且处理失败，系统将报错并停止运行。如果成功处理，函数将返回。如果发生其他类型的错误（faultnumb 不等于 14），系统将调用 die(0) 函数并停止运行。
 
+vma_map_fairvadrs_core 函数，来进行缺页异常的核心处理
+```c
+sint_t vma_map_fairvadrs_core(mmadrsdsc_t *mm, adr_t vadrs)
+{
+    sint_t rets = FALSE;
+    adr_t phyadrs = NULL;
+    virmemadrs_t *vma = &mm->msd_virmemadrs;
+    kmvarsdsc_t *kmvd = NULL;
+    kvmemcbox_t *kmbox = NULL;
+    knl_spinlock(&vma->vs_lock);
+    //查找对应的kmvarsdsc_t结构
+    kmvd = vma_map_find_kmvarsdsc(vma, vadrs);
+    if (NULL == kmvd)
+    {
+        rets = -EFAULT;
+        goto out;
+    }
+    //返回kmvarsdsc_t结构下对应kvmemcbox_t结构
+    kmbox = vma_map_retn_kvmemcbox(kmvd);
+    if (NULL == kmbox)
+    {
+        rets = -ENOMEM;
+        goto out;
+    }
+    //分配物理内存页面并建立MMU页表
+    phyadrs = vma_map_phyadrs(mm, kmvd, vadrs, (0 | PML4E_US | PML4E_RW | PML4E_P));
+    if (NULL == phyadrs)
+    {
+        rets = -ENOMEM;
+        goto out;
+    }
+    rets = EOK;
+out:
+    knl_spinunlock(&vma->vs_lock);
+    return rets;
+}
+```
+首先，查找缺页地址对应的 kmvarsdsc_t 结构，没找到说明没有分配该虚拟地址空间，那属于非法访问不予处理；然后，查找 kmvarsdsc_t 结构下面的对应 kvmemcbox_t 结构，它是用来挂载物理内存页面的；最后，分配物理内存页面并建立 MMU 页表映射关系。  
+## 缺页地址是否合法
+要想判断一个缺页地址是否合法，我们就要确定它是不是已经分配的虚拟地址，也就是看这个虚拟地址是不是会落在某个 kmvarsdsc_t 结构表示的虚拟地址区间。因此，我们要去查找相应的 kmvarsdsc_t 结构，如果没有找到则虚拟地址没有分配，即这个缺页地址不合法。  
+```c
+kmvarsdsc_t *vma_map_find_kmvarsdsc(virmemadrs_t *vmalocked, adr_t vadrs)
+{
+    list_h_t *pos = NULL;
+    kmvarsdsc_t *curr = vmalocked->vs_currkmvdsc;
+    //看看上一次刚刚被操作的kmvarsdsc_t结构
+    if (NULL != curr)
+    {
+        //虚拟地址是否落在kmvarsdsc_t结构表示的虚拟地址区间
+        if ((vadrs >= curr->kva_start) && (vadrs < curr->kva_end))
+        {
+            return curr;
+        }
+    }
+    //遍历每个kmvarsdsc_t结构
+    list_for_each(pos, &vmalocked->vs_list)
+    {
+        curr = list_entry(pos, kmvarsdsc_t, kva_list);
+        //虚拟地址是否落在kmvarsdsc_t结构表示的虚拟地址区间
+        if ((vadrs >= curr->kva_start) && (vadrs < curr->kva_end))
+        {
+            return curr;
+        }
+    }
+    return NULL;
+}
+```
+核心逻辑就是用虚拟地址和 kmvarsdsc_t 结构中的数据做比较，大于等于 kmvarsdsc_t 结构的开始地址并且小于 kmvarsdsc_t 结构的结束地址，就行了。  
+## 建立 kvmemcbox_t 结构
+kvmemcbox_t 结构可以用来挂载物理内存页面 msadsc_t 结构，而这个 msadsc_t 结构是由虚拟地址区间 kmvarsdsc_t 结构代表的虚拟空间所映射的物理内存页面。一个 kmvarsdsc_t 结构，必须要有一个 kvmemcbox_t 结构，才能分配物理内存。除了这个功能，kvmemcbox_t 结构还可以在内存共享的时候使用。  
+```c
+//返回kmvarsdsc_t结构下对应kvmemcbox_t结构
+kvmemcbox_t *vma_map_retn_kvmemcbox(kmvarsdsc_t *kmvd)
+{
+    kvmemcbox_t *kmbox = NULL;
+    //如果kmvarsdsc_t结构中已经存在了kvmemcbox_t结构，则直接返回
+    if (NULL != kmvd->kva_kvmbox)
+    {
+        return kmvd->kva_kvmbox;
+    }
+    //新建一个kvmemcbox_t结构
+    kmbox = knl_get_kvmemcbox();
+    if (NULL == kmbox)
+    {
+        return NULL;
+    }
+    //指向这个新建的kvmemcbox_t结构
+    kmvd->kva_kvmbox = kmbox;
+    return kmvd->kva_kvmbox;
+}
+```
+knl_get_kvmemcbox 函数就是调用 kmsob_new 函数分配一个 kvmemcbox_t 结构大小的内存空间对象，然后其中实例化 kvmemcbox_t 结构的变量。
+## 映射物理内存页面
+现在我们正式给虚拟地址分配对应的物理内存页面，建立对应的 MMU 页表，使虚拟地址到物理地址可以转换成功，数据终于能写入到物理内存之中了。  
+```c
+//分配物理内存页面并建立MMU页表
+adr_t vma_map_msa_fault(mmadrsdsc_t *mm, kvmemcbox_t *kmbox, adr_t vadrs, u64_t flags)
+{
+    msadsc_t *usermsa;
+    adr_t phyadrs = NULL;
+    //分配一个物理内存页面，挂载到kvmemcbox_t中，并返回对应的msadsc_t结构
+    usermsa = vma_new_usermsa(mm, kmbox);
+    if (NULL == usermsa)
+    {
+        //没有物理内存页面返回NULL表示失败
+        return NULL;
+    }
+    //获取msadsc_t对应的内存页面的物理地址
+    phyadrs = msadsc_ret_addr(usermsa);
+    //建立MMU页表完成虚拟地址到物理地址的映射
+    if (hal_mmu_transform(&mm->msd_mmu, vadrs, phyadrs, flags) == TRUE)
+    {
+        //映射成功则返回物理地址
+        return phyadrs;
+    }
+    //映射失败就要先释放分配的物理内存页面
+    vma_del_usermsa(mm, kmbox, usermsa, phyadrs);
+    return NULL;
+}
 
+//接口函数
+adr_t vma_map_phyadrs(mmadrsdsc_t *mm, kmvarsdsc_t *kmvd, adr_t vadrs, u64_t flags)
+{
+    kvmemcbox_t *kmbox = kmvd->kva_kvmbox;
+    if (NULL == kmbox)
+    {
+        return NULL;
+    }
+    //调用核心函数，flags表示页表条目中的相关权限、存在、类型等位段
+    return vma_map_msa_fault(mm, kmbox, vadrs, flags);
+}
+```
+用 vma_map_msa_fault 函数做实际的工作。首先，它会调用 vma_new_usermsa 函数，在 vma_new_usermsa 函数内部调用了我们前面学过的页面内存管理接口，分配一个物理内存页面并把对应的 msadsc_t 结构挂载到 kvmemcbox_t 结构上。  
+接着获取 msadsc_t 结构对应内存页面的物理地址，最后是调用 hal_mmu_transform 函数完成虚拟地址到物理地址的映射工作，它主要是建立 MMU 页表，在 HuOS/hal/x86/halmmu.c 文件中。vma_map_phyadrs 函数一旦成功返回，就会随着原有的代码路径层层返回。至此，处理缺页异常就结束了。  
+# 总结
+首先，我们实现了虚拟地址空间的分配与释放。这是虚拟内存管理的核心功能，通过查找地址区间结构来确定哪些虚拟地址空间已经分配或者空闲。然后我们解决了缺页异常处理问题。我们分配一段虚拟地址空间，并没有分配对应的物理内存页面，而是等到真正访问虚拟地址空间时，才触发了缺页异常。这时，我们再来处理缺页异常中分配物理内存页面的工作，建立对应的 MMU 页表映射关系。这种延迟分配技术可以有效节约物理内存。  
 
-
-
-
-
-
-
-
-
-
-
-
+**请问，x86 CPU 的缺页异常，是第几号异常？缺页的地址保存在哪个寄存器中？**  
+如果异常号等于14则是内存缺页异常，打印缺页地址，这地址保存在CPU的CR2寄存器中  
 
 
 
