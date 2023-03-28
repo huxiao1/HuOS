@@ -45,3 +45,4 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ## [Sixth -- Process](./week6/README.md)
 ### [Code](./week6/HuOS6.0/)
 #### [什么是进程](./week6/What_is_Process/README.md)
+#### [多进程调度](./week6/Manage_Process/README.md)
