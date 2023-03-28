@@ -15,7 +15,13 @@
 # 管理进程
 ## 进程的生命周期
 系统实现中，通常用进程的状态表示进程的生命周期。进程的状态我们用几个宏来定义。
-
+```c
+#define TDSTUS_RUN 0        //进程运行状态
+#define TDSTUS_SLEEP 3      //进程睡眠状态
+#define TDSTUS_WAIT 4       //进程等待状态
+#define TDSTUS_NEW 5        //进程新建状态
+#define TDSTUS_ZOMB 6       //进程僵死状态
+```
 
 
 
