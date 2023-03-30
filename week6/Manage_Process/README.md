@@ -300,6 +300,20 @@ void save_to_new_context(thread_t *next, thread_t *prev)
     return;
 }
 ```
+```
+第一个约束 : [ PREV_RSP ] "=m"(prev->td_context.ctx_nextrsp) 将当前进程的机器上下文结构体中的一个成员变量 ctx_nextrsp 的地址赋值给了 %[PREV_RSP] 这个符号，以便在汇编代码中使用。"=m" 表示该约束把 %[PREV_RSP] 符号表示的内存地址当做输出操作数，而 prev->td_context.ctx_nextrsp 表示该约束把当前进程的机器上下文结构体中的 ctx_nextrsp 成员当做输入操作数。
+
+第二个约束 : [ NEXT_RSP ] "m"(next->td_context.ctx_nextrsp), "D"(next), "S"(prev) 则将下一个进程的机器上下文结构体中的 ctx_nextrsp 成员的值作为输入操作数，同时把 next 和 prev 两个指针作为附加参数传递给汇编代码。"m" 表示该约束把 next->td_context.ctx_nextrsp 当做输入操作数，而 "D"(next) 和 "S"(prev) 则分别表示把指针 next 和 prev 分别作为第一个和第二个附加参数传递给汇编代码。
+
+最后使用 memory 约束来保证内存的同步。
+```
+```
+=m 约束表示内存操作数为输出操作数，即该内存位置存储的值将在代码执行过程中被修改。这个约束通常用于汇编代码中需要写入内存的指令，例如 mov、add、sub 等等。
+
+m 约束表示内存操作数为输入操作数，即该内存位置存储的值将在代码执行过程中被读取。这个约束通常用于汇编代码中需要读取内存的指令，例如 mov、cmp、test 等等。
+
+总的来说，=m 约束表示该内存位置将会被修改，而 m 约束表示该内存位置仅仅会被读取。
+```
 通过切换进程的内核栈，导致切换进程，因为进程的函数调用路径就保存在对应的内核栈中，只要调用 krlschedul 函数，最后的函数调用路径一定会停在 save_to_new_context 函数中，当 save_to_new_context 函数一返回，就会导致回到调用 save_to_new_context 函数的下一行代码开始运行，在这里就是返回到 krlschedul 函数中，最后层层返回。  
 ![process5](./images/process5.png)  
 同时你也会发现一个问题，就是这个切换机制能够正常运行，必须保证下一个进程已经被调度过，也就是它调用执行过 krlschedul 函数。  
