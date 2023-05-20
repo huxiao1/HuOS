@@ -56,3 +56,5 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [Device type&driver](./week7//Device_type_driver/README.md)
 #### [Register Device in Kernel](./week7/Reg_Dev_in_Kernel/README.md)
 ### [Code](./week7/HuOS9.0/)
+#### [Process_Kernel_IO_Pack](./week7/Process_Kernel_IO_Pack/README.md)
+### [Code](./week7/HuOS10.0/)
