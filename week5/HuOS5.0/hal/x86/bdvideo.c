@@ -1,12 +1,12 @@
 /**********************************************************
         引导调式屏幕上显示输出文件bdvideo.c
 ***********************************************************
-                彭东
+                HX
 **********************************************************/
 #include "cosmostypes.h"
 #include "cosmosmctrl.h"
 
-const char *cosmos_version = "Cosmos\n内核版本:00.01\n彭东 @ 构建于 "__DATE__
+const char *cosmos_version = "HuOS\n内核版本:00.01\nHX @ 构建于 "__DATE__
                            " "__TIME__
                            "\n";
 

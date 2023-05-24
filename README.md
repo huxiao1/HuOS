@@ -59,3 +59,7 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [Process_Kernel_IO_Pack](./week7/Process_Kernel_IO_Pack/README.md)
 ### [Code](./week7/HuOS10.0/)
 #### [Get_Dev_Info](./week7/Get_Dev_Info/README.md)
+![1](./week7/Get_Dev_Info/images/4.png)
+## [Eighth -- File System](./week8/README.md)
+### [Code](./week8/HuOS11.0/)
+#### [RepositoryStructure_OrganizationFiles](./week8/RepositoryStructure_OrganizationFiles/README.md)
