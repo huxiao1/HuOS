@@ -1,5 +1,5 @@
 <!-- toc -->
-如何获取所有设备信息
+Linux如何获取所有设备信息
 - [Linux下的设备信息](#Linux下的设备信息)
 - [数据结构](#数据结构)
     - [kobject和kset](#kobject和kset)
