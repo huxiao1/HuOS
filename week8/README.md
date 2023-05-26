@@ -5,3 +5,6 @@
 ![RepositoryStructure_OrganizationFiles](./RepositoryStructure_OrganizationFiles/images/5.png)
 ### [Code](./HuOS12.0/)
 #### [Filesys_formatting_operations](./Filesys_formatting_operations/README.md)
+![Filesys_formatting_operations](./Filesys_formatting_operations/images/1.png)
+### [Code](./HuOS13.0/)
+#### [Sixmajor_operations_of_the_file_system](./Sixmajor_operations_of_the_file_system/README.md)

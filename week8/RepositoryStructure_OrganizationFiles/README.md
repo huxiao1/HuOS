@@ -91,7 +91,7 @@ typedef struct s_RFSDIR
 #define FMD_FIL_TYPE 2
 #define FMD_DEL_TYPE 5//文件管理头也需要表明它管理的是目录文件还是普通文件
 typedef struct s_FILBLKS
-{    
+{
     uint_t fb_blkstart;//开始的逻辑储存块号
     uint_t fb_blknr;//逻辑储存块的块数，从blkstart开始的连续块数
 }filblks_t;
