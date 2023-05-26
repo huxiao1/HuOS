@@ -40,7 +40,7 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [如何分配和释放虚拟内存](./week5/operate_virtual_memory/README.md)
 #### [如何使用伙伴系统分配内存](./week5/buddy_system/README.md)
 #### [如何使用SLAB系统分配内存](./week5/slab_system/README.md)
-![](./week4/images/res3.jpg)
+![](./week4/images/res3.jpg)  
 
 ## [Sixth -- Process](./week6/README.md)
 ### [Code](./week6/HuOS6.0/)
@@ -65,6 +65,7 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [RepositoryStructure_OrganizationFiles](./week8/RepositoryStructure_OrganizationFiles/README.md)
 ### [Code](./week8/HuOS12.0/)
 #### [Filesys_formatting_operations](./week8/Filesys_formatting_operations/README.md)
-![Filesys_formatting_operations](./week8/Filesys_formatting_operations/images/1.png)
+![Filesys_formatting_operations](./week8/Filesys_formatting_operations/images/1.png)  
 ### [Code](./week8/HuOS13.0/)  
 #### [Sixmajor_operations_of_the_file_system](./week8/Sixmajor_operations_of_the_file_system/README.md)
+![Sixmajor_operations_of_the_file_system](./week8/Sixmajor_operations_of_the_file_system/images/1.png)  
