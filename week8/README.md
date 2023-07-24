@@ -9,3 +9,6 @@
 ### [Code](./HuOS13.0/)
 #### [Sixmajor_operations_of_the_file_system](./Sixmajor_operations_of_the_file_system/README.md)
 ![Sixmajor_operations_of_the_file_system](./Sixmajor_operations_of_the_file_system/images/1.png)
+
+### [Code](./HuOS14.0/)
+#### [Linux_How_the_virtual_file_system_manages_files](./Linux_How_the_virtual_file_system_manages_files/README.md)

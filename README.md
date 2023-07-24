@@ -60,6 +60,7 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ![1](./week7/Get_Dev_Info/images/4.png)  
 ### [Code](./week7/HuOS10.0/)
 #### [Linux_Get_Dev_Info](./week7/Get_Dev_Info/README.md)
+
 ## [Eighth -- File System](./week8/README.md)
 ### [Code](./week8/HuOS11.0/)
 #### [RepositoryStructure_OrganizationFiles](./week8/RepositoryStructure_OrganizationFiles/README.md)
@@ -69,3 +70,10 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ### [Code](./week8/HuOS13.0/)  
 #### [Sixmajor_operations_of_the_file_system](./week8/Sixmajor_operations_of_the_file_system/README.md)
 ![Sixmajor_operations_of_the_file_system](./week8/Sixmajor_operations_of_the_file_system/images/1.png)  
+### [Code](./week8/HuOS14.0/)  
+#### [Linux_How_the_virtual_file_system_manages_files](./week8/Linux_How_the_virtual_file_system_manages_files/README.md)  
+
+## [Ninth -- Network](./week9/README.md)
+#### [URL_to_network_card_observe_network_data_flow_globally](./week9/URL_to_network_card_observe_network_data_flow_globally/README.md)
+### [Code](./week9/HuOS15.0/)
+#### [Kernel_to_Application_Network_Data_Flows_in_Kernel](./week9/Kernel_to_Application_Network_Data_Flows_in_Kernel/README.md)
