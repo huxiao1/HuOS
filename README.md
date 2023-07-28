@@ -78,3 +78,5 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 ### [Code](./week9/HuOS15.0/)
 #### [Kernel_to_Application_Network_Data_Flows_in_Kernel](./week9/Kernel_to_Application_Network_Data_Flows_in_Kernel/README.md)
 #### [Explain_macro_network_architecture_of_OS](./week9/Explain_macro_network_architecture_of_OS/README.md)
+#### [Linux_socket_and_network_programming_interface](./week9/Linux_socket_and_network_programming_interface/README.md)
+#### [Linux_socket_interface](./week9/Linux_socket_interface/README.md)
