@@ -80,3 +80,9 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [Explain_macro_network_architecture_of_OS](./week9/Explain_macro_network_architecture_of_OS/README.md)
 #### [Linux_socket_and_network_programming_interface](./week9/Linux_socket_and_network_programming_interface/README.md)
 #### [Linux_socket_interface](./week9/Linux_socket_interface/README.md)
+
+## [Tenth -- Interface](./week10/README.md)
+### [Code](./week10/HuOS16.0/)
+#### [Build a bridge of communication](./week10/Build%20_bridge_of_communication/README.md)
+### [Code](./week10/HuOS17.0/)
+#### [System APIs](./week10/System_APIs/README.md)

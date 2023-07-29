@@ -1,0 +1,42 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build", //调用make编译C代码文件
+            "type": "shell",
+            "command": "make uefidebug", //执行make命令
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+        },
+        {
+            "label": "Run QEMU",//调用QEMU
+            "type": "shell",
+            "isBackground": true,//让QEMU在后台运行
+            "command": "echo Starting QEMU&sudo qemu-system-x86_64 -s -cpu SandyBridge -m 4096 -drive if=pflash,format=raw,file=./ovmf/OVMF_CODE.fd,readonly=on -drive if=pflash,format=raw,file=./ovmf/OVMF_VARS.fd,readonly=on -drive format=raw,file=fat:rw:./ovmf/esp -net none",
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^(Starting QEMU)",
+                    "line": 1,
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^(Starting QEMU)",
+                    "endsPattern": "^(Starting QEMU)"
+                }
+            }
+            
+        },
+        {
+            "label": "Build and run",//编译并运行
+            "dependsOrder":"sequence",//任务的依赖顺序
+            "dependsOn": [
+                "Build",              //先执行编译
+                "Run QEMU",         //然后调用QEMU运行
+            ]
+        }
+    ]
+}
