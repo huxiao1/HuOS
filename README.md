@@ -86,3 +86,8 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [Build a bridge of communication](./week10/Build%20_bridge_of_communication/README.md)
 ### [Code](./week10/HuOS17.0/)
 #### [System APIs](./week10/System_APIs/README.md)
+![sys_call](./week10/System_APIs/images/view.png)  
+
+## [Elevnth -- Virtualization](./week11/README.md)
+#### [KVM](./week11/KVM/README.md)
+#### [Container](./week11/Container/README.md)
