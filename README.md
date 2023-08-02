@@ -95,3 +95,5 @@ HuOS混合内核架构的整体设计思路：首先它是一个宏内核，但�
 #### [ARM_M1](./week11/ARM_M1/README.md)
 ![res](./week11/ARM_M1/images/res.png)  
 #### [Aarch64](./week11/Aarch64/README.md)
+
+## [Twelfth -- Summarize & Skill](./week12/README.md)
