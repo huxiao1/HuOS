@@ -1,5 +1,6 @@
 <!-- toc -->
 https://aeneag.xyz/articles/2022/05/07/1651914235439.html
+- [qemu 安装](#qemu-安装)
 - [HuOS调试思路](#HuOS调试思路)
 - [制作“带调试符号的 elf 文件"的详细步骤](#制作带调试符号的-elf-文件的详细步骤)
     - [修复两个 bug](#修复两个-bug)
@@ -12,6 +13,9 @@ https://aeneag.xyz/articles/2022/05/07/1651914235439.html
 - [魔改](#魔改)
 - [参考资料](#参考资料)
 <!-- tocstop -->
+
+# qemu 安装
+https://www.cyberithub.com/how-to-install-qemu-on-ubuntu-20-04-lts-focal-fossa/  
 
 # HuOS调试思路
 虽然我们可以在代码中打印日志，但这种方式效率不高，因为每次都需要编写代码、重新编译运行。我更喜欢用 GDB 和 QEMU 动态调试 Cosmos。  
@@ -43,6 +47,27 @@ https://github.com/leveryd/cosmos-debug-file
 第二个问题是第二十六课遇到的运行时报错，如下图所示。  
 ![4](./images/4.png)  
 因为 acpi 是和“电源管理”相关的模块，这里并没有用到，所以我们可以注释掉 initldr/ldrkrl/chkcpmm.c 文件中的 init_acpi 函数调用。  
+第三个问题是INITKLDR DIE ERROR:S，原因是virtualbox的虚拟机设置的不是64位  
+第四个问题是  
+```
+如果大家按照作者的详细步骤操作时出现如下之类的问题：
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+/etc/gdb/gdbinit:3: Error in sourced command file:
+Remote 'g' packet reply is too long (expected 308 bytes, got 608 bytes): 0000000000000000685301020080ffff0000000000000000ac2d00020080fffffe000000000000000000000000000000b0ff08000080ffff88ff08000080ffffff0000000000000000000000000000000000000000000000b025010000000000000000000000000000000000000000000000000000000000685301020080ffffe52d00020080ffff4600200008000000100000001000
+这个问题是GDB调试64位Kernel时才有的，解决的方法是在进行gdb操作前先在(gdb)后面执行如下语句：
+(gdb) set architecture i386:x86-64:intel
+(gdb) target remote:1234
+Remote debugging using :1234
+(gdb) symbol-file Cosmos/build/Cosmos.elf 
+Reading symbols from Cosmos/build/Cosmos.elf...
+(gdb) b *0x04000000
+Breakpoint 1 at 0x4000000
+(gdb) b *0x04000068
+Breakpoint 3 at 0x4000068
+(gdb) c
+Continuing.
+```
 ## 修改“编译选项"
 修复 bug 后，我们虽然能够成功编译运行，但是因为文件没有调试符号，所以我们在 GDB 调试时无法对应到 c 源码，也无法用函数名下断点。因此，我们需要通过修改编译选项来生成带调试符号的 elf 文件。  
 
